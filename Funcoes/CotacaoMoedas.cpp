@@ -5,6 +5,7 @@
 
 using namespace std;
 
+// Em resumo, o método abaixo pega o json feito na requisição
 static size_t WriteCallback(char *contents, size_t size, size_t nmemb, char *buffer_in)
 {
 	((string*)buffer_in)->append((char*)contents, size * nmemb);
@@ -13,9 +14,9 @@ static size_t WriteCallback(char *contents, size_t size, size_t nmemb, char *buf
 
 float CotacaoMoedas(string sMoeda, float ganhos)
 {
+	// Declarações do curl da biblioteca curl para fazer as requisições http
 	using json = nlohmann::json;
 	
-    int x = 0;
     CURL *curl;
     CURLcode res;
     string readBuffer;
@@ -26,8 +27,8 @@ float CotacaoMoedas(string sMoeda, float ganhos)
     	float nGanhos = ganhos;
     	string moeda = sMoeda;
     	string reqMoeda;
-    	//cout << "Digite a sigla da moeda: ";
-    	//cin >> moeda;
+
+		// Abaixo é o corpo da requisição http, e reqMoeda recebe a requisição da moeda que foi escolhida e pede a API para que traga a conversão para real brasileiro
     	reqMoeda = "https://economia.awesomeapi.com.br/last/" + moeda + "-BRL";
         curl_easy_setopt(curl, CURLOPT_URL, reqMoeda.c_str());
         curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
@@ -38,13 +39,16 @@ float CotacaoMoedas(string sMoeda, float ganhos)
         res = curl_easy_perform(curl);
         curl_easy_cleanup(curl);
         
+        // Manipulção do json que foi pego na requisição, lembrando que está sendo usada a biblioteca json.hpp para manipular json
+        // Além disso, foi feita uma manipulação com o nome da propriedade que vai ser acessada dévido as regras da API
         json j = json::parse(readBuffer);
+        
         string moedaParaReal = moeda + "BRL";
-        //double cotacao = j.at(moeda)["bid"].get<double>();
-        // double usd_cotacao = j["USD"]["bid"]; ou double usd_cotacao = j.at("USD").at("bid");
-        //double cotacao = j.at(moeda).at("bid");
+
+		//  Pegando o valor que uma unidade daquela moeda tem, transformada para real
         float cotacao = stod(j.at(moedaParaReal).at("bid").get<string>());
-        //cout << "A Cotacao para " << moedaParaReal << ": " << cotacao << endl;
+
+		// E finalmente retornando o valor que usuário digitou, mas agora transformado em real brasileiro
         return cotacao * nGanhos;
     }
 }

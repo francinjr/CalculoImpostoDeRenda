@@ -1,1 +1,0 @@
-g++ cotacaomoedas.cpp -o cotacaomoedas -Icurl/include -Lcurl/lib -lcurl
